@@ -21,7 +21,7 @@ function Nav(props){
       <a id={t.id} href={'read/'+t.id} onClick={event=>{
         event.preventDefault();
         props.onChangeMode(Number(event.target.id));//컨버팅한것
-      }}>{t.title}{t.body}</a></li>)
+      }}>{t.title}</a></li>)
     
   }
   
@@ -31,6 +31,27 @@ function Nav(props){
       {lis}
     </ol>
 </nav>
+}
+function Create(props){
+  return <article>
+    <h2>Create</h2>
+    {/* 이 폼 태그의 온 서브밋이라고 하는 props를 제공한다. 
+    onSubmit은 submit버틍을 클릭했을때 form태그에서 발생하는 이벤트이다. 
+    이벤트가 발생ㅇ하면 페이지가 리로드된다.그래서prevenDefault를 사용한다. */}
+      <form onSubmit={event=>{
+        event.preventDefault();
+          // 입력된 value를 가지고 오기 위해서 해줄것 event.target은 form태그이다.
+          
+        const title=event.target.title.value;
+        const body=event.target.body.value;
+        //그리고 이 value들을어떻게 사용자가 받을수있나? 밑에 onCreate를 통해서
+        props.onCreate(title,body);
+      }}>
+        <p><input type="text" name="title" placeholder='title'/></p>
+        <p><textarea name="body" placeholder="body"></textarea></p>
+        <p><input type="submit" value="Create"></input></p>
+      </form>
+  </article>
 }
 function Article(props){
   return <article>
@@ -44,11 +65,12 @@ function App() {
   // const setMode = _mode[1];
   const [mode,setMode] = useState("WELCOME");//이렇게 요약할 수 있다.
   const [id, setId] = useState(null);
-  const topics = [
+  const [nextId, setNextId] = useState(4);
+  const [topics,setTopics] = useState([
     {id:1, title:"html", body:"html is..."},
     {id:2, title:"CSS", body:"CSS is..."},
     {id:3, title:"JavaScript", body:"JS is..."}
-  ]
+  ]);
   let content = null;
   if(mode === "WELCOME"){
       content = <Article title="Welcome!" body="Hello, WEB"></Article>
@@ -62,6 +84,17 @@ function App() {
       }
     }
       content = <Article title={title} body={body}></Article>
+  }else if(mode === "CREATE"){
+      content = <Create onCreate={(_title, _body)=>{
+        const newTopic = {id:nextId, title:_title, body:_body};
+        const newTopics = [...topics];
+        // topics는 배열로 존재하기 때문에 [] 이다. 앞은 범오브젝트지만 겉을 보면 배열형태이다.
+        newTopics.push(newTopic);
+        setTopics(newTopics);
+        setMode('READ');
+        setId(nextId);
+        setNextId(nextId+1);
+      }}></Create>
   }
   return (
     // <div> 처음에 한것
@@ -88,6 +121,10 @@ function App() {
       setId(_id);
     }}></Nav>
   {content}
+  <a href="/create" onClick={event=>{
+    event.preventDefault();
+    setMode("CREATE");
+  }}>Create</a>
   </div>
   );
 }
